@@ -8,7 +8,7 @@ Paper：SpeechFormer: A Hierarchical Efficient Framework Incorporating the Chara
 * Alzheimer’s disease detection: [Pitt](https://dementia.talkbank.org/)  
 * Depression classification: [DAIC-WOZ](https://dcapswoz.ict.usc.edu/)  
 
-Note that you should create a metadata file (`.csv` format) for each dataset to record the `name` and `label` of the samples. Then modify the arguments: `meta_csv_file` in `./utils/dataset.py` according to the absolute path of the `.csv` file.
+Note that you should create a metadata file (`.csv` format) for each dataset to record the `name` and `label` of the samples. Then modify the argument: `meta_csv_file` in `./utils/dataset.py` according to the absolute path of the `.csv` file.
 
 ## Extract acoustic feature
 * Three acoustic features are extracted from each audio sample, including `spectrogram (Spec)`, `Log-Mel spectrogram (Logmel)` and `pre-trained Wav2vec`.  
