@@ -21,4 +21,8 @@ python ./extract_feature/extract_wav2vec.py
 ```
 
 # Train model
-
+Set the hyper-parameters on `./config/config.py` and `./config/model_config.json`.
+Next, run:
+```
+python train_model.py
+```
