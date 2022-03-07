@@ -1,0 +1,38 @@
+{   
+    "num_classes": 7,
+
+    "evaluate": ["F1"], 
+
+    "spec_20ms": {
+        "feature_dim": 442, 
+        "matdir": "/your_feature_path/wav_spec_20ms_mat",
+        "matkey": "spec", 
+        "seq_first": false,
+        "length": 449,
+        "pad_value": -80,
+        "frame": 0.02,
+        "hop": 0.01
+    },
+
+    "wav2vec": {
+        "feature_dim": 512, 
+        "matdir": "/your_feature_path/wav_wav2vec_mat",
+        "matkey": "wav", 
+        "seq_first": true,
+        "length": 446,
+        "pad_value": 0,
+        "frame": 0.03,
+        "hop": 0.01
+    },
+
+    "logmel": {
+        "feature_dim": 256, 
+        "matdir": "/your_feature_path/logmel_25ms_mat",
+        "matkey": "logmel", 
+        "seq_first": true,
+        "length": 446,
+        "pad_value": 0,
+        "frame": 0.025,
+        "hop": 0.01
+    }
+}
