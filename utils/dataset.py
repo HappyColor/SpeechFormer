@@ -9,7 +9,7 @@ import random
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from scipy import io
-from utils_speech.speech_kit import Speech_Kit, get_D_P
+from utils.speech_kit import Speech_Kit, get_D_P
 import multiprocessing as mp
 from sklearn.model_selection import StratifiedShuffleSplit
 
