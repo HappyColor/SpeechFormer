@@ -9,6 +9,8 @@ Paper：SpeechFormer: A Hierarchical Efficient Framework Incorporating the Chara
 * Depression classification: [DAIC-WOZ](https://dcapswoz.ict.usc.edu/)  
 
 ## Extract acoustic feature
+Each extracted feature is saved in .mat format using `scipy`.
+Download the pre-trained wav2vec model [here.](https://github.com/pytorch/fairseq/blob/main/examples/wav2vec)
 ```
 python ./extract_feature/extract_spec.py
 python ./extract_feature/extract_logmel.py
@@ -16,3 +18,4 @@ python ./extract_feature/extract_wav2vec.py
 ```
 
 # Train model
+
