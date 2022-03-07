@@ -9,5 +9,10 @@ Paper：SpeechFormer: A Hierarchical Efficient Framework Incorporating the Chara
 * Depression classification: [DAIC-WOZ](https://dcapswoz.ict.usc.edu/)  
 
 ## Extract acoustic feature
+```
+python ./extract_feature/extract_spec.py
+python ./extract_feature/extract_logmel.py
+python ./extract_feature/extract_wav2vec.py
+```
 
 # Train model
