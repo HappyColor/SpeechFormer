@@ -1,6 +1,6 @@
 # SpeechFormer
 Paper：SpeechFormer: A Hierarchical Efficient Framework Incorporating the Characteristics of Speech
-
+![SpeechFormer](./figures/framework.pdf)
 # Datasets
 Speech emotion recognition: [IEMOCAP](https://sail.usc.edu/iemocap/index.html), [MELD](https://affective-meld.github.io/)  
 Alzheimer’s disease detection: [Pitt](https://dementia.talkbank.org/)  
