@@ -1,6 +1,7 @@
 # Framework: SpeechFormer
 ![SpeechFormer](./figures/framework.png)
-Paper：SpeechFormer: A Hierarchical Efficient Framework Incorporating the Characteristics of Speech
+Paper：SpeechFormer: A Hierarchical Efficient Framework Incorporating the Characteristics of Speech  
+This paper was submitted to INTERSPEECH 2022.
 
 # Prepare data
 ## Download datasets
