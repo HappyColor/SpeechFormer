@@ -21,7 +21,7 @@ _C.train.lr = 0.0005
 _C.train.seed = 123
 # Select the GPUs used
 _C.train.device_id = '0'
-# whether to find a appropriate initial learning rate automatically
+# Whether to find a appropriate initial learning rate automatically
 _C.train.find_init_lr = False
 
 # Select a database to train a model
