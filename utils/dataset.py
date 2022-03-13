@@ -64,7 +64,7 @@ class Base_database():
     def load_a_sample(self, idx=0):
         label = self.labels[idx]
         x = np.float32(io.loadmat(os.path.join(self.matdir, self.names[idx]))[self.matkey])
-        y = torch.tensor(self.label_2_index(label)) if self.conveter is not None else torch.tensor(label).to(torch.float32)
+        y = torch.tensor(self.label_2_index(label))
         return x, y
     
     def get_sample_name(self, idx):
