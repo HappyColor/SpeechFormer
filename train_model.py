@@ -44,12 +44,11 @@ class Engine():
             model_json = json.load(f1)[self.cfg.model.type]
             feas_json = json.load(f2)
             data_json = feas_json[self.cfg.dataset.feature]
-            model_json['num_classes'] = feas_json['num_classes']
             self.cfg.train.evaluate = feas_json['evaluate']
-            model_json.update(data_json)
-            input_dim = (data_json['feature_dim'] // model_json['num_heads']) * model_json['num_heads']
-            model_json['input_dim'] = input_dim
-            model_json['ffn_embed_dim'] = input_dim // 2
+            model_json['num_classes'] = feas_json['num_classes']
+            model_json['input_dim'] = (data_json['feature_dim'] // model_json['num_heads']) * model_json['num_heads']
+            model_json['ffn_embed_dim'] = model_json['input_dim'] // 2
+            model_json['hop'] = data_json['hop']
         
         self.model = utils.model.load_model(self.cfg.model.type, self.device, **model_json)
         self.optimizer = torch.optim.SGD(filter(lambda x: x.requires_grad, self.model.parameters()), lr=self.cfg.train.lr, momentum=0.9)
