@@ -250,10 +250,7 @@ class Pitt(Base_database):
 
     def load_a_sample(self, idx=0):
         label = self.labels[idx]
-        if self.data is not None:
-            x = np.float32(self.data[self.names[idx]])
-        else:
-            x = np.float32(io.loadmat(os.path.join(self.matdir, label, self.task, self.names[idx]))[self.matkey])
+        x = np.float32(io.loadmat(os.path.join(self.matdir, label, self.task, self.names[idx]))[self.matkey])
         y = torch.tensor(self.label_2_index(label))
         return x, y
 
