@@ -2,6 +2,8 @@
     "num_classes": 2,
 
     "evaluate": ["accuracy", "recall"], 
+    
+    "meta_csv_file": "/your_metadata_file_path/metadata.csv",
 
     "spec_20ms": {
         "feature_dim": 442, 
