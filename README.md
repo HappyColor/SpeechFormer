@@ -9,7 +9,7 @@ This paper was submitted to INTERSPEECH 2022.
 * Alzheimer’s disease detection: [Pitt](https://dementia.talkbank.org/)  
 * Depression classification: [DAIC-WOZ](https://dcapswoz.ict.usc.edu/)  
 
-Note that you should create a metadata file (`.csv` format) for each dataset to record the `name` and `label` of the samples. Then modify the argument: `meta_csv_file` in `./utils/dataset.py` according to the absolute path of the `.csv` file.
+Note that you should create a metadata file (`.csv` format) for each dataset to record the `name` and `label` (and `state`) of the samples. Then modify the argument: `meta_csv_file` in `./config/xxx_feature_config.json` according to the absolute path of the `.csv` file.
 
 ## Extract acoustic feature
 * Three acoustic features are extracted from each audio sample, including `spectrogram (Spec)`, `Log-Mel spectrogram (Logmel)` and `pre-trained Wav2vec`.  
@@ -20,6 +20,7 @@ python ./extract_feature/extract_spec.py
 python ./extract_feature/extract_logmel.py
 python ./extract_feature/extract_wav2vec.py
 ```
+Modify the argument: `matdir` in `./config/xxx_feature_config.json` to your feature savepth.
 
 # Train model
 Set the hyper-parameters on `./config/config.py` and `./config/model_config.json`.  
