@@ -75,10 +75,10 @@ class Base_database():
         return index
 
 class Base_dataset(Dataset):
-    def __init__(self, database: Base_database, kit: Speech_Kit, load_name=False):
+    def __init__(self, database: Base_database, mode, seq_first, length, feature_dim, pad_value, load_name=False):
         super().__init__()
         self.database = database
-        self.kit = kit
+        self.kit = Speech_Kit(mode, seq_first, length, feature_dim, pad_value)
         self.load_name = load_name
     
     def __len__(self):
@@ -88,8 +88,7 @@ class Base_dataset(Dataset):
         return _getitem(idx, self.database, self.kit, self.load_name)
 
 class IEMOCAP(Base_database):
-    def __init__(self, matdir=None, matkey=None, seq_first=False, state=None):
-        meta_csv_file='/your_csvfile/name_label_text.csv'
+    def __init__(self, matdir=None, matkey=None, seq_first=False, state=None, meta_csv_file=None):
         df = pd.read_csv(meta_csv_file)
         df_sad = df[df.label == 'sad']
         df_neu = df[df.label == 'neu']
@@ -147,17 +146,17 @@ class IEMOCAP(Base_database):
         self.labels = y_fold
 
 class IEMOCAP_dataset(Base_dataset):
-    def __init__(self, matdir, matkey, seq_first, state, length=0, feature_dim=0, pad_value=0, mode='constant', fold=1, strategy='5cv', **kwargs):
-        database = IEMOCAP(matdir, matkey, seq_first, state=state)
-        kit = Speech_Kit(mode, seq_first, length, feature_dim, pad_value)
+    def __init__(self, matdir, matkey, seq_first, state, meta_csv_file, length=0, feature_dim=0, 
+                pad_value=0, mode='constant', fold=1, strategy='5cv', **kwargs):
+        database = IEMOCAP(matdir, matkey, seq_first, state, meta_csv_file)
         database.foldsplit(fold, strategy)
-        super().__init__(database, kit)
+        super().__init__(database, mode, seq_first, length, feature_dim, pad_value)
 
 class MELD(Base_database):
-    def __init__(self, matdir=None, matkey=None, seq_first=False, state=None):
+    def __init__(self, matdir=None, matkey=None, seq_first=False, state=None, meta_csv_file=None):
         assert state in ['train', 'dev', 'test'], print(f'Wrong state: {state}')
         self.set_state(state)
-        names, labels = self.load_state_data()
+        names, labels = self.load_state_data(meta_csv_file)
 
         if matdir is not None:
             matdir = os.path.join(matdir, state)
@@ -168,9 +167,10 @@ class MELD(Base_database):
     def set_state(self, state):
         self.state = state
     
-    def load_state_data(self):
-        meta_csv_file = os.path.join('/your_csvfile/', self.state + '.csv')
+    def load_state_data(self, meta_csv_file):
         df = pd.read_csv(meta_csv_file)
+
+        df = df[df.state == self.state]
 
         names, labels = [], []
         for row in df.iterrows():
@@ -179,18 +179,16 @@ class MELD(Base_database):
         return names, labels
 
 class MELD_dataset(Base_dataset):
-    def __init__(self, matdir, matkey, seq_first, state, length=0, feature_dim=0, 
+    def __init__(self, matdir, matkey, seq_first, state, meta_csv_file, length=0, feature_dim=0, 
                pad_value=0, mode='constant', **kwargs):
-        database = MELD(matdir, matkey, seq_first, state=state)
-        kit = Speech_Kit(mode, seq_first, length, feature_dim, pad_value)
-        super().__init__(database, kit)
+        database = MELD(matdir, matkey, seq_first, state, meta_csv_file)
+        super().__init__(database, mode, seq_first, length, feature_dim, pad_value)
 
 class Pitt(Base_database):
-    def __init__(self, matdir=None, matkey=None, seq_first=False, fold=1, seed=2021, state=None):
+    def __init__(self, matdir=None, matkey=None, seq_first=False, state=None, meta_csv_file=None, fold=1, seed=2021):
         self.set_state(state)
-        self.task = 'cookie'
         label_conveter = {'Control': 0, 'Dementia': 1}
-        names, labels = self.load_all_data()
+        names, labels = self.load_all_data(meta_csv_file)
         # names, labels = self.split_train_test_10fold(names, labels, fold, label_conveter)    # random split 10-fold CV
         names, labels = self.speaker_independent_split_10fold(names, labels, fold, seed)       # speaker independent split 10-fold CV
         super().__init__(names, labels, matdir, matkey, seq_first, state, label_conveter)
@@ -237,8 +235,7 @@ class Pitt(Base_database):
         
         return fold_names, fold_lables
         
-    def load_all_data(self):
-        meta_csv_file = os.path.join('/your_csvfile/utterance_cookie_label.csv')
+    def load_all_data(self, meta_csv_file):
         df = pd.read_csv(meta_csv_file)
         df = df[df.valid == True]
         
@@ -250,22 +247,21 @@ class Pitt(Base_database):
 
     def load_a_sample(self, idx=0):
         label = self.labels[idx]
-        x = np.float32(io.loadmat(os.path.join(self.matdir, label, self.task, self.names[idx]))[self.matkey])
+        x = np.float32(io.loadmat(os.path.join(self.matdir, label, 'cookie', self.names[idx]))[self.matkey])
         y = torch.tensor(self.label_2_index(label))
         return x, y
 
 class Pitt_dataset(Base_dataset):
-    def __init__(self, matdir, matkey, seq_first, state, length=0, feature_dim=0, fold=1, seed=2021,
+    def __init__(self, matdir, matkey, seq_first, state, meta_csv_file, length=0, feature_dim=0, fold=1, seed=2021,
                pad_value=0, mode='constant', **kwargs):
-        database = Pitt(matdir, matkey, seq_first, state=state, fold=fold, seed=seed)
-        kit = Speech_Kit(mode, seq_first, length, feature_dim, pad_value)
-        super().__init__(database, kit, load_name=True)
+        database = Pitt(matdir, matkey, seq_first, state, meta_csv_file, fold=fold, seed=seed)
+        super().__init__(database, mode, seq_first, length, feature_dim, pad_value, load_name=True)
 
 class DAIC_WOZ(Base_database):
-    def __init__(self, matdir=None, matkey=None, seq_first=False, state=None):
+    def __init__(self, matdir=None, matkey=None, seq_first=False, state=None, meta_csv_file=None):
         assert state in ['train', 'test'], print(f'Wrong state: {state}')  # test represents the development set in this database.
         self.set_state(state)
-        names, labels = self.load_state_data()
+        names, labels = self.load_state_data(meta_csv_file)
 
         label_conveter = {'not-depressed': 0, 'depressed': 1}
         super().__init__(names, labels, matdir, matkey, seq_first, state, label_conveter)
@@ -275,9 +271,10 @@ class DAIC_WOZ(Base_database):
             state = 'dev'
         self.state = state
     
-    def load_state_data(self):
-        meta_csv_file = os.path.join('/your_csvfile/', f'resample_equal_{self.state}_metadata.csv')
+    def load_state_data(self, meta_csv_file):
         df = pd.read_csv(meta_csv_file)
+
+        df = df[df.state == self.state]
 
         names, indexes = [], []
         index_2_label = {0: 'not-depressed', 1: 'depressed'}
@@ -291,11 +288,10 @@ class DAIC_WOZ(Base_database):
         return mat_names, labels
     
 class DAIC_WOZ_dataset(Base_dataset):
-    def __init__(self, matdir, matkey, seq_first, state, length=0, feature_dim=0, 
+    def __init__(self, matdir, matkey, seq_first, state, meta_csv_file, length=0, feature_dim=0, 
                 pad_value=0, mode='constant', **kwargs):
-        database = DAIC_WOZ(matdir, matkey, seq_first, state=state)
-        kit = Speech_Kit(mode, seq_first, length, feature_dim, pad_value)
-        super().__init__(database, kit, load_name=True)
+        database = DAIC_WOZ(matdir, matkey, seq_first, state, meta_csv_file)
+        super().__init__(database, mode, seq_first, length, feature_dim, pad_value, load_name=True)
 
         # if state == 'train':
             # self.resample_up()
