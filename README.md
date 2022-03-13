@@ -20,7 +20,7 @@ python ./extract_feature/extract_spec.py
 python ./extract_feature/extract_logmel.py
 python ./extract_feature/extract_wav2vec.py
 ```
-Modify the argument: `matdir` in `./config/xxx_feature_config.json` to your feature savepth.
+Modify the argument: `matdir` in `./config/xxx_feature_config.json` to the folder path of your extracted feature.
 
 # Train model
 Set the hyper-parameters on `./config/config.py` and `./config/model_config.json`.  
