@@ -283,7 +283,7 @@ class DAIC_WOZ(Base_database):
             indexes.append(row[1]['label'])  
         labels = [index_2_label[idx] for idx in indexes]
         
-        mat_names = [n[:-10] for n in names]
+        mat_names = [n[:-10] for n in names]  # (Participant_ID)_(segment)
         
         return mat_names, labels
     
