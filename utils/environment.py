@@ -3,9 +3,6 @@ import os
 import random
 import numpy as np
 import torch
-import logging
-
-logger = logging.getLogger('train')
 
 def visible_gpus(gpu_id):
     os.environ['CUDA_VISIBLE_DEVICES'] = gpu_id
