@@ -20,7 +20,7 @@ class Speech_MSA(nn.Module):
         self.kdim = embed_dim
         self.vdim = embed_dim
         self.local_size = int(local_size)
-        self.overlap = overlap
+        self.overlap = overlap    #  overlap = True may have nondeterministic behavior.
 
         self.project_qkv = nn.Linear(embed_dim, 3 * embed_dim, bias=bias)
         self.project_out = nn.Linear(embed_dim, embed_dim, bias=bias)
@@ -33,7 +33,7 @@ class Speech_MSA(nn.Module):
         self.scaling = float(self.head_dim) ** -0.5
     
     def get_overlap_segments(self, x: torch.Tensor, window_size: int):
-        '''Get overlap segments for local attention. This algorithm may have nondeterministic behavior.
+        '''Get overlap segments for local attention.
 
         Args: 
             x: Input sequence in shape (B, T, C).
