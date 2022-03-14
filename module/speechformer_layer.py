@@ -33,7 +33,7 @@ class Speech_MSA(nn.Module):
         self.scaling = float(self.head_dim) ** -0.5
     
     def get_overlap_segments(self, x: torch.Tensor, window_size: int):
-        '''Get overlap segments for local attention.
+        '''Get overlap segments for local attention. This algorithm may have nondeterministic behavior.
 
         Args: 
             x: Input sequence in shape (B, T, C).
