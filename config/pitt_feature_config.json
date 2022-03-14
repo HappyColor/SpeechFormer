@@ -5,7 +5,7 @@
     
     "meta_csv_file": "/your_metadata_file_path/metadata.csv",
 
-    "spec_20ms": {
+    "spec": {
         "feature_dim": 442, 
         "matdir": "/your_feature_path/wav_spec_20ms_mat",
         "matkey": "spec", 
