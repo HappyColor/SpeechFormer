@@ -27,7 +27,7 @@ _C.train.find_init_lr = False
 # Select a database to train a model
 _C.dataset.database = 'iemocap'   # iemocap, meld, pitt, daic_woz
 # Select a kind of feature to train a model
-_C.dataset.feature = 'wav2vec'    # spec_20ms, wav2vec, logmel
+_C.dataset.feature = 'wav2vec'    # spec, wav2vec, logmel
 # Select a padding mode when preparing data a mini-batch 
 _C.dataset.padmode = 'constant'   # constant, repeat
 
