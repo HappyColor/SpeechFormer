@@ -43,8 +43,9 @@ class Engine():
         with open('./config/model_config.json', 'r') as f1, open(f'./config/{self.cfg.dataset.database}_feature_config.json', 'r') as f2:
             model_json = json.load(f1)[self.cfg.model.type]
             feas_json = json.load(f2)
-            data_json = feas_json[self.cfg.dataset.feature]
             self.cfg.train.evaluate = feas_json['evaluate']
+            data_json = feas_json[self.cfg.dataset.feature]
+            data_json['meta_csv_file'] = feas_json['meta_csv_file']
             model_json['num_classes'] = feas_json['num_classes']
             model_json['input_dim'] = (data_json['feature_dim'] // model_json['num_heads']) * model_json['num_heads']
             model_json['ffn_embed_dim'] = model_json['input_dim'] // 2
@@ -220,7 +221,7 @@ class Engine():
                 if hasattr(self.cfg.train, 'vote'):
                     if self.cfg.dataset.database == 'pitt':
                         modify_tag_func = utils.toolbox._majority_target_Pitt
-                    elif self.cfg.dataset.database == 'DAIC_WOZ':
+                    elif self.cfg.dataset.database == 'daic_woz':
                         modify_tag_func = utils.toolbox._majority_target_DAIC_WOZ
                     else:
                         raise KeyError(f'Database: {Cfg.dataset.database} do not need voting!')
@@ -240,23 +241,23 @@ class Engine():
                 )
     
     def all_recoder_to_file(self):
-        self.predict_recoder.to_file(f'./temp_files/temp_predict_{self.local_rank}_{self.free_port}.pt')
-        self.label_recoder.to_file(f'./temp_files/temp_label_{self.local_rank}_{self.free_port}.pt')
-        self.tag_recoder.to_file(f'./temp_files/temp_tag_{self.local_rank}_{self.free_port}.json')
+        self.predict_recoder.to_file(f'./temp/temp_predict_{self.local_rank}_{self.free_port}.pt')
+        self.label_recoder.to_file(f'./temp/temp_label_{self.local_rank}_{self.free_port}.pt')
+        self.tag_recoder.to_file(f'./temp/temp_tag_{self.local_rank}_{self.free_port}.json')
         torch.distributed.barrier()
 
     def gather_world_file(self):
         for i in range(self.world_size):
-            self.gather_predict.record(torch.load(f'./temp_files/temp_predict_{i}_{self.free_port}.pt'))
-            self.gather_label.record(torch.load(f'./temp_files/temp_label_{i}_{self.free_port}.pt'))
-            with open(f'./temp_files/temp_tag_{i}_{self.free_port}.json', 'r') as f:
+            self.gather_predict.record(torch.load(f'./temp/temp_predict_{i}_{self.free_port}.pt'))
+            self.gather_label.record(torch.load(f'./temp/temp_label_{i}_{self.free_port}.pt'))
+            with open(f'./temp/temp_tag_{i}_{self.free_port}.json', 'r') as f:
                 self.gather_tag.record(json.load(f))
 
     def delete_world_file(self):
         for i in range(self.world_size):
-            os.remove(f'./temp_files/temp_predict_{i}_{self.free_port}.pt')
-            os.remove(f'./temp_files/temp_label_{i}_{self.free_port}.pt')
-            os.remove(f'./temp_files/temp_tag_{i}_{self.free_port}.json')
+            os.remove(f'./temp/temp_predict_{i}_{self.free_port}.pt')
+            os.remove(f'./temp/temp_label_{i}_{self.free_port}.pt')
+            os.remove(f'./temp/temp_tag_{i}_{self.free_port}.json')
 
     def model_save(self, is_best=False):  
         ckpt_save_file = os.path.join(self.ckpt_save_path, 'best.pt') if is_best \
