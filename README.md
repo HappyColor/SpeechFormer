@@ -3,8 +3,15 @@
 Paper：[SpeechFormer: A Hierarchical Efficient Framework Incorporating the Characteristics of Speech](https://arxiv.org/abs/2203.03812)  
 This paper was submitted to INTERSPEECH 2022.
 
-# Prepare data
-## Download datasets
+# Getting started
+## Install dependencies
+All dependencies can be installed using pip:
+```
+python -m pip install -r requirements.txt
+```
+Our experiments run on Python 3.6 and PyTorch 1.5. Other versions should work but are not tested.
+
+## Prepare data
 * Speech emotion recognition: [IEMOCAP](https://sail.usc.edu/iemocap/index.html), [MELD](https://affective-meld.github.io/)  
 * Alzheimer’s disease detection: [Pitt](https://dementia.talkbank.org/)  
 * Depression classification: [DAIC-WOZ](https://dcapswoz.ict.usc.edu/)  
