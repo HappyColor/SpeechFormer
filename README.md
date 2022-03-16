@@ -30,7 +30,7 @@ python ./extract_feature/extract_wav2vec.py
 ```
 Modify the argument: `matdir` in `./config/xxx_feature_config.json` to the folder path of your extracted feature.
 
-# Train model
+## Train model
 Set the hyper-parameters on `./config/config.py` and `./config/model_config.json`.  
 Next, run:
 ```
