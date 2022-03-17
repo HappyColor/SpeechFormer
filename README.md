@@ -32,8 +32,10 @@ Modify the argument: `matdir` in `./config/xxx_feature_config.json` to the folde
 
 ## Train model
 Set the hyper-parameters on `./config/config.py` and `./config/model_config.json`.  
+Note: the value of `expand` in `./config/model_config.json` for SpeechFormer-S is `[1, 1, 1, -1]`, while that of SpeechFormer-B is `[1, 1, 2, -1]`. Set this argument manually.  
 Next, run:
 ```
 python train_model.py
 ```
-Note: the value of `expand` for SpeechFormer-S is `[1, 1, 1, -1]`, while that of SpeechFormer-B is `[1, 1, 2, -1]`.  
+You can also pass the hyper-parameters from the command line for convenience, more details can be found in `train_model.py`.
+  
