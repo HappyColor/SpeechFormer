@@ -37,25 +37,42 @@ def create_workshop(cfg, local_rank):
             os.makedirs(cfg.workshop)
             os.makedirs(cfg.ckpt_save_path)
 
-def modify_mark(cfg, filepath='./config/model_config.json'):
+def modify_config(cfg, args):
+    # merge from Namespace
+    args = vars(args)  # Namespace -> Dict
+    args = dict_2_list(args)
+    print('Use arguments from command line:', args)
+    cfg.merge_from_list(args)
+
     modeltype = cfg.model.type
+    database = cfg.dataset.database
+    feature = cfg.dataset.feature
     
+    train_config = json.load(open(f'./config/train_{modeltype}.json', 'r'))[database][feature]
+    model_config = json.load(open('./config/model_config.json', 'r'))[modeltype]
+
+    # merge from train_config
+    train_config = dict_2_list(train_config)
+    print('Use arguments from train json file:', train_config)
+    cfg.merge_from_list(train_config)
+    
+    # modify cfg.mark
     if modeltype == 'Transformer':
-        with open(filepath, 'r') as f:
-            model_json = json.load(f)[modeltype]
-            num_layers = model_json['num_layers']
+        num_layers = model_config['num_layers']
         _mark = f'L{num_layers}'
-    elif modeltype == 'SpeechFormer':
-        with open(filepath, 'r') as f:
-            model_json = json.load(f)[modeltype]
-            num_layers = model_json['num_layers']
-            expand = model_json['expand']
+    elif modeltype == 'SpeechFormer': 
+        num_layers = model_config['num_layers']
+        expand = model_config['expand']
         _mark = f'L{num_layers[0]}{num_layers[1]}{num_layers[2]}{num_layers[3]}_expa{expand[0]}{expand[1]}{expand[2]}'
     else:
-        return
+        raise ValueError(f'Unknown model type: {modeltype}')
 
-    if cfg.mark is not None:
-        cfg.mark = _mark + '_' + cfg.mark
-    else:
-        cfg.mark = _mark
-    return
+    cfg.mark = _mark + '_' + cfg.mark if cfg.mark is not None else _mark
+    print('Modified mark:', cfg.mark)
+
+def dict_2_list(dict):
+    lst = []
+    for key, value in dict.items():
+        if value is not None:
+            lst.extend([key, value])
+    return lst
