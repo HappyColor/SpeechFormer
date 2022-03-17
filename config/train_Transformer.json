@@ -1,0 +1,73 @@
+{
+    "iemocap": {
+        "spec": {
+            "train.EPOCH": 120,
+            "train.batch_size": 32,
+            "train.lr": 0.005
+        },
+        "logmel": {
+            "train.EPOCH": 120,
+            "train.batch_size": 32,
+            "train.lr": 0.005
+        },
+        "wav2vec": {
+            "train.EPOCH": 120,
+            "train.batch_size": 32,
+            "train.lr": 0.001
+        }
+    },
+
+    "meld": {
+        "spec": {
+            "train.EPOCH": 120,
+            "train.batch_size": 32,
+            "train.lr": 0.005
+        },
+        "logmel": {
+            "train.EPOCH": 120,
+            "train.batch_size": 32,
+            "train.lr": 0.005
+        },
+        "wav2vec": {
+            "train.EPOCH": 120,
+            "train.batch_size": 32,
+            "train.lr": 0.005
+        }
+    },
+
+    "pitt": {
+        "spec": {
+            "train.EPOCH": 80,
+            "train.batch_size": 32,
+            "train.lr": 0.005
+        },
+        "logmel": {
+            "train.EPOCH": 80,
+            "train.batch_size": 32,
+            "train.lr": 0.005
+        },
+        "wav2vec": {
+            "train.EPOCH": 80,
+            "train.batch_size": 32,
+            "train.lr": 0.005
+        }
+    },
+
+    "daic_woz": {
+        "spec": {
+            "train.EPOCH": 60,
+            "train.batch_size": 16,
+            "train.lr": 0.0005
+        },
+        "logmel": {
+            "train.EPOCH": 60,
+            "train.batch_size": 16,
+            "train.lr": 0.0005
+        },
+        "wav2vec": {
+            "train.EPOCH": 60,
+            "train.batch_size": 16,
+            "train.lr": 0.0005
+        }
+    }
+}
