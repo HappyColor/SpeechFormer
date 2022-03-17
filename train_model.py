@@ -8,16 +8,16 @@ Created on Thu Nov 11 18:16:12 CST 2021
 import os
 from tqdm import tqdm
 import torch
-import torch.distributed
 import torch.optim.lr_scheduler as lr_scheduler
 import torch.distributed as dist
 import torch.multiprocessing as mp
 from torch.utils.tensorboard import SummaryWriter
 from collections import OrderedDict
 import json
+import argparse
 
 import utils
-from config import Cfg, create_workshop, modify_mark
+from config import Cfg, create_workshop, modify_config
 
 class Engine():
     def __init__(self, cfg: Cfg, local_rank: int, world_size: int, free_port: int):
@@ -244,7 +244,7 @@ class Engine():
         self.predict_recoder.to_file(f'./temp/temp_predict_{self.local_rank}_{self.free_port}.pt')
         self.label_recoder.to_file(f'./temp/temp_label_{self.local_rank}_{self.free_port}.pt')
         self.tag_recoder.to_file(f'./temp/temp_tag_{self.local_rank}_{self.free_port}.json')
-        torch.distributed.barrier()
+        dist.barrier()
 
     def gather_world_file(self):
         for i in range(self.world_size):
@@ -330,18 +330,27 @@ def main_worker(local_rank, Cfg, world_size, dist_url, free_port):
         outfile = f'result/result_{cfg.model.type}.csv'
         utils.write_result.path_to_csv(os.path.dirname(cfg.workshop), criterion, evaluate, csvfile=outfile)
 
-def main():
-    utils.environment.visible_gpus(Cfg.train.device_id)
-    utils.environment.set_seed(Cfg.train.seed)
+def main(cfg):
+    utils.environment.visible_gpus(cfg.train.device_id)
+    utils.environment.set_seed(cfg.train.seed)
 
     free_port = utils.distributed.find_free_port()
     dist_url = f'tcp://127.0.0.1:{free_port}'   
     world_size = torch.cuda.device_count()    # num_gpus
     print(f'world_size={world_size} Using dist_url={dist_url}')
 
-    modify_mark(Cfg)
-    mp.spawn(fn=main_worker, args=(Cfg, world_size, dist_url, free_port), nprocs=world_size)
+    mp.spawn(fn=main_worker, args=(cfg, world_size, dist_url, free_port), nprocs=world_size)
 
 if __name__=='__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-mo", "--train.model.type", help="modify cfg.train.model.type", type=str)
+    parser.add_argument("-d", "--dataset.database", help="modify cfg.dataset.database", type=str)
+    parser.add_argument("-f", "--dataset.feature", help="modify cfg.dataset.feature", type=str)
+    parser.add_argument("-g", "--train.device_id", help="modify cfg.train.device_id", type=str)
+    parser.add_argument("-m", "--mark", help="modify cfg.mark", type=str)
+    parser.add_argument("-s", "--train.seed", help="modify cfg.train.seed", type=int)
+    args = parser.parse_args()
+
+    modify_config(Cfg, args)
+    main(Cfg)
     
