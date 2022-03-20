@@ -6,7 +6,7 @@ import torch
 
 def visible_gpus(gpu_id):
     os.environ['CUDA_VISIBLE_DEVICES'] = gpu_id
-    print('Using GPU:', gpu_id)
+    print('Use GPU:', gpu_id)
 
 def set_seed(seed):
     random.seed(seed)
