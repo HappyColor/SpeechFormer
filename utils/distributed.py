@@ -65,3 +65,5 @@ def all_gather_object(object_list, obj, world_size):
         tensor = tensor.type(torch.uint8).cpu()  # type:ignore[call-overload]
         tensor_size = object_size_list[i]
         object_list[i] = _tensor_to_object(tensor, tensor_size)
+
+        
