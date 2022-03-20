@@ -20,7 +20,7 @@ import utils
 from config import Cfg, create_workshop, modify_config
 
 class Engine():
-    def __init__(self, cfg: Cfg, local_rank: int, world_size: int, free_port: int):
+    def __init__(self, cfg, local_rank: int, world_size: int, free_port: int):
         self.cfg = cfg
         self.local_rank = local_rank
         self.world_size = world_size
@@ -229,7 +229,7 @@ class Engine():
                     elif self.cfg.dataset.database == 'daic_woz':
                         modify_tag_func = utils.toolbox._majority_target_DAIC_WOZ
                     else:
-                        raise KeyError(f'Database: {Cfg.dataset.database} do not need voting!')
+                        raise KeyError(f'Database: {self.cfg.dataset.database} do not need voting!')
                     _, epoch_preds, epoch_labels = utils.toolbox.majority_vote(epoch_tag, epoch_preds, epoch_labels, modify_tag_func)
                 average_f1 = 'weighted' if self.cfg.dataset.database == 'meld' else 'macro'
                 score_1, score_2, score_3, score_4, score_5 = self.calculate_score(epoch_preds, epoch_labels, average_f1)
@@ -277,8 +277,8 @@ class Engine():
         utils.logger.close_logger(self.logger_train)
         utils.logger.close_logger(self.logger_test)
 
-def main_worker(local_rank, Cfg, world_size, dist_url, free_port):
-    utils.environment.set_seed(Cfg.train.seed + local_rank)
+def main_worker(local_rank, cfg, world_size, dist_url, free_port):
+    utils.environment.set_seed(cfg.train.seed + local_rank)
     torch.cuda.set_device(local_rank)
     dist.init_process_group(
         backend='nccl',
@@ -287,25 +287,25 @@ def main_worker(local_rank, Cfg, world_size, dist_url, free_port):
         rank=local_rank,
     )
     
-    if Cfg.dataset.database == 'iemocap':
-        Cfg.train.strategy = '5cv'
+    if cfg.dataset.database == 'iemocap':
+        cfg.train.strategy = '5cv'
         folds = [1, 2, 3, 4, 5]
-    elif Cfg.dataset.database == 'meld':
+    elif cfg.dataset.database == 'meld':
         folds = [1]
-    elif Cfg.dataset.database == 'pitt':
-        Cfg.train.vote = True
+    elif cfg.dataset.database == 'pitt':
+        cfg.train.vote = True
         folds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    elif Cfg.dataset.database == 'daic_woz':
-        Cfg.train.vote = True
+    elif cfg.dataset.database == 'daic_woz':
+        cfg.train.vote = True
         folds = [1]
     else:
-        raise KeyError(f'Unknown database: {Cfg.dataset.database}')
+        raise KeyError(f'Unknown database: {cfg.dataset.database}')
 
     for f in folds:
-        cfg = Cfg.clone()
-        cfg.train.current_fold = f
-        create_workshop(cfg, local_rank)
-        engine = Engine(cfg, local_rank, world_size, free_port)
+        cfg_clone = cfg.clone()
+        cfg_clone.train.current_fold = f
+        create_workshop(cfg_clone, local_rank)
+        engine = Engine(cfg_clone, local_rank, world_size, free_port)
         engine.run()
         torch.cuda.empty_cache()
 
