@@ -75,12 +75,9 @@ class Engine():
         data_type = torch.int64
         self.loss_meter = utils.avgmeter.AverageMeter(device='cpu')
         self.score_meter = utils.avgmeter.AverageMeter(device='cpu')
-        self.predict_recoder = utils.recoder.TensorRecorder(device='cpu', dtype=data_type)
-        self.label_recoder = utils.recoder.TensorRecorder(device='cpu', dtype=data_type)
+        self.predict_recoder = utils.recoder.TensorRecorder(device='cuda', dtype=data_type)
+        self.label_recoder = utils.recoder.TensorRecorder(device='cuda', dtype=data_type)
         self.tag_recoder = utils.recoder.StrRecorder(device='cpu', dtype=str)
-        self.gather_predict = utils.recoder.TensorRecorder(device='cpu', dtype=data_type)
-        self.gather_label = utils.recoder.TensorRecorder(device='cpu', dtype=data_type)
-        self.gather_tag = utils.recoder.StrRecorder(device='cpu', dtype=str)
         self.train_score_1, self.train_score_2, self.train_score_3, self.train_loss = [], [], [], []
         self.test_score_1, self.test_score_2, self.test_score_3, self.test_loss = [], [], [], []
         
@@ -92,9 +89,25 @@ class Engine():
         self.predict_recoder.reset()
         self.label_recoder.reset()
         self.tag_recoder.reset()
-        self.gather_predict.reset()
-        self.gather_label.reset()
-        self.gather_tag.reset()
+
+    def gather_distributed_data(self, gather_data):
+        if isinstance(gather_data, torch.Tensor):
+            _output = [torch.zeros_like(gather_data) for _ in range(self.world_size)]
+            dist.all_gather(_output, gather_data, async_op=False)
+            output = torch.cat(_output)
+        else:
+            if gather_data[0] is not None:
+                _output = [None for _ in range(self.world_size)]
+                if hasattr(dist, 'all_gather_object'):
+                    dist.all_gather_object(_output, gather_data)
+                else:
+                    utils.distributed.all_gather_object(_output, gather_data, self.world_size)
+                output = []
+                for lst in _output:
+                    output.extend(lst)
+            else:
+                output = None
+        return output
 
     def train_epoch(self):
         self.train_dataloader.set_epoch(self.current_epoch)
@@ -114,7 +127,6 @@ class Engine():
             x = torch.stack(data[0], dim=0).to(self.device)
             y = torch.tensor(data[1]).to(self.device)
             vote_tag = data[2]
-
             batch_size = y.shape[0]
 
             self.optimizer.zero_grad()
@@ -125,14 +137,13 @@ class Engine():
             loss.backward()
             self.optimizer.step()
 
-            y_pred = torch.argmax(out, dim=1).cpu()
-            y = y.cpu()
+            y_pred = torch.argmax(out, dim=1)
 
             self.predict_recoder.record(y_pred)
             self.label_recoder.record(y)
             self.tag_recoder.record(vote_tag)
 
-            score = utils.toolbox.calculate_basic_score(y_pred, y)
+            score = utils.toolbox.calculate_basic_score(y_pred.cpu(), y.cpu())
             self.loss_meter.update(loss.item())
             self.score_meter.update(score, batch_size)
 
@@ -152,16 +163,13 @@ class Engine():
                     self.writer.add_scalar('Step LR', self.optimizer.param_groups[0]['lr'], self.iteration)
                 self.scheduler.step()
 
-        self.all_recoder_to_file()
+        epoch_preds = self.gather_distributed_data(self.predict_recoder.data).cpu()
+        epoch_labels = self.gather_distributed_data(self.label_recoder.data).cpu()
+        epoch_tag = self.gather_distributed_data(self.tag_recoder.data)
         
         if self.local_rank == 0:
-            self.gather_world_file()
-            epoch_preds = self.gather_predict.data
-            epoch_labels = self.gather_label.data
-            epoch_tag = self.gather_tag.data
             average_f1 = 'weighted' if self.cfg.dataset.database == 'meld' else 'macro'
             score_1, score_2, score_3, score_4, score_5 = self.calculate_score(epoch_preds, epoch_labels, average_f1)
-            self.delete_world_file()
 
             self.train_score_1.append(score_1)
             self.train_score_2.append(score_2)
@@ -194,14 +202,13 @@ class Engine():
                 out = self.model(x)
                 loss = self.loss_func(out, y)
 
-                y_pred = torch.argmax(out, dim=1).cpu()
-                y = y.cpu()
+                y_pred = torch.argmax(out, dim=1)
 
                 self.predict_recoder.record(y_pred)
                 self.label_recoder.record(y)
                 self.tag_recoder.record(vote_tag)
 
-                score = utils.toolbox.calculate_basic_score(y_pred, y)
+                score = utils.toolbox.calculate_basic_score(y_pred.cpu(), y.cpu())
 
                 self.loss_meter.update(loss.item())
                 self.score_meter.update(score, batch_size)
@@ -211,13 +218,11 @@ class Engine():
                 pbar_test_dic['loss'] = f'{self.loss_meter.avg:.5f}'
                 pbar_test.set_postfix(pbar_test_dic)
 
-            self.all_recoder_to_file()
+            epoch_preds = self.gather_distributed_data(self.predict_recoder.data).cpu()
+            epoch_labels = self.gather_distributed_data(self.label_recoder.data).cpu()
+            epoch_tag = self.gather_distributed_data(self.tag_recoder.data)
         
             if self.local_rank == 0:
-                self.gather_world_file()
-                epoch_preds = self.gather_predict.data
-                epoch_labels = self.gather_label.data
-                epoch_tag = self.gather_tag.data
                 if hasattr(self.cfg.train, 'vote'):
                     if self.cfg.dataset.database == 'pitt':
                         modify_tag_func = utils.toolbox._majority_target_Pitt
@@ -228,7 +233,6 @@ class Engine():
                     _, epoch_preds, epoch_labels = utils.toolbox.majority_vote(epoch_tag, epoch_preds, epoch_labels, modify_tag_func)
                 average_f1 = 'weighted' if self.cfg.dataset.database == 'meld' else 'macro'
                 score_1, score_2, score_3, score_4, score_5 = self.calculate_score(epoch_preds, epoch_labels, average_f1)
-                self.delete_world_file()
 
                 self.test_score_1.append(score_1)
                 self.test_score_2.append(score_2)
@@ -239,25 +243,6 @@ class Engine():
                 self.logger_test.info(
                     f'Testing epoch: {self.current_epoch}, accuracy: {score_1:.5f}, precision: {score_4:.5f}, recall: {score_2:.5f}, F1: {score_3:.5f}, loss: {self.loss_meter.avg:.5f}, confuse_matrix: \n{score_5}'
                 )
-    
-    def all_recoder_to_file(self):
-        self.predict_recoder.to_file(f'./temp/temp_predict_{self.local_rank}_{self.free_port}.pt')
-        self.label_recoder.to_file(f'./temp/temp_label_{self.local_rank}_{self.free_port}.pt')
-        self.tag_recoder.to_file(f'./temp/temp_tag_{self.local_rank}_{self.free_port}.json')
-        dist.barrier()
-
-    def gather_world_file(self):
-        for i in range(self.world_size):
-            self.gather_predict.record(torch.load(f'./temp/temp_predict_{i}_{self.free_port}.pt'))
-            self.gather_label.record(torch.load(f'./temp/temp_label_{i}_{self.free_port}.pt'))
-            with open(f'./temp/temp_tag_{i}_{self.free_port}.json', 'r') as f:
-                self.gather_tag.record(json.load(f))
-
-    def delete_world_file(self):
-        for i in range(self.world_size):
-            os.remove(f'./temp/temp_predict_{i}_{self.free_port}.pt')
-            os.remove(f'./temp/temp_label_{i}_{self.free_port}.pt')
-            os.remove(f'./temp/temp_tag_{i}_{self.free_port}.json')
 
     def model_save(self, is_best=False):  
         ckpt_save_file = os.path.join(self.ckpt_save_path, 'best.pt') if is_best \
