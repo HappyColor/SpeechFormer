@@ -343,7 +343,7 @@ def main(cfg):
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-mo", "--train.model.type", help="modify cfg.train.model.type", type=str)
+    parser.add_argument("-mo", "--model.type", help="modify cfg.train.model.type", type=str)
     parser.add_argument("-d", "--dataset.database", help="modify cfg.dataset.database", type=str)
     parser.add_argument("-f", "--dataset.feature", help="modify cfg.dataset.feature", type=str)
     parser.add_argument("-g", "--train.device_id", help="modify cfg.train.device_id", type=str)
