@@ -69,6 +69,9 @@ def modify_config(cfg, args):
 
     cfg.mark = _mark + '_' + cfg.mark if cfg.mark is not None else _mark
     print('Modified mark:', cfg.mark)
+    
+    # add key: evaluate
+    cfg.train.evaluate = json.load(open(f'./config/{database}_feature_config.json', 'r'))['evaluate']
 
 def dict_2_list(dict):
     lst = []
