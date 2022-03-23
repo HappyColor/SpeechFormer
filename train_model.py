@@ -156,7 +156,7 @@ class Engine():
 
             if self.cfg.train.find_init_lr:
                 if loss.item() > 20:
-                    raise ValueError(f'Loss: {loss.item()} is start to expand, stop the program.')
+                    raise ValueError(f'Loss: {loss.item()} started to expand. Please use tensorboard to find the appropriate lr.')
                 if self.local_rank == 0:
                     self.writer.add_scalar('Step Loss', loss.item(), self.iteration)
                     self.writer.add_scalar('Total Loss', self.loss_meter.avg, self.iteration)
