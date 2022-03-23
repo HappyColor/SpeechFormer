@@ -43,7 +43,6 @@ class Engine():
         with open('./config/model_config.json', 'r') as f1, open(f'./config/{self.cfg.dataset.database}_feature_config.json', 'r') as f2:
             model_json = json.load(f1)[self.cfg.model.type]
             feas_json = json.load(f2)
-            self.cfg.train.evaluate = feas_json['evaluate']
             data_json = feas_json[self.cfg.dataset.feature]
             data_json['meta_csv_file'] = feas_json['meta_csv_file']
             model_json['num_classes'] = feas_json['num_classes']
