@@ -20,11 +20,10 @@ import utils
 from config import Cfg, create_workshop, modify_config
 
 class Engine():
-    def __init__(self, cfg, local_rank: int, world_size: int, free_port: int):
+    def __init__(self, cfg, local_rank: int, world_size: int):
         self.cfg = cfg
         self.local_rank = local_rank
         self.world_size = world_size
-        self.free_port = free_port
         self.ckpt_save_path = self.cfg.ckpt_save_path
         self.device = self.cfg.train.device
         self.EPOCH = self.cfg.train.EPOCH
@@ -275,7 +274,7 @@ class Engine():
         utils.logger.close_logger(self.logger_train)
         utils.logger.close_logger(self.logger_test)
 
-def main_worker(local_rank, cfg, world_size, dist_url, free_port):
+def main_worker(local_rank, cfg, world_size, dist_url):
     utils.environment.set_seed(cfg.train.seed + local_rank)
     torch.cuda.set_device(local_rank)
     dist.init_process_group(
@@ -303,7 +302,7 @@ def main_worker(local_rank, cfg, world_size, dist_url, free_port):
         cfg_clone = cfg.clone()
         cfg_clone.train.current_fold = f
         create_workshop(cfg_clone, local_rank)
-        engine = Engine(cfg_clone, local_rank, world_size, free_port)
+        engine = Engine(cfg_clone, local_rank, world_size)
         engine.run()
         torch.cuda.empty_cache()
 
@@ -322,7 +321,7 @@ def main(cfg):
     world_size = torch.cuda.device_count()    # num_gpus
     print(f'world_size={world_size} Using dist_url={dist_url}')
 
-    mp.spawn(fn=main_worker, args=(cfg, world_size, dist_url, free_port), nprocs=world_size)
+    mp.spawn(fn=main_worker, args=(cfg, world_size, dist_url), nprocs=world_size)
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
