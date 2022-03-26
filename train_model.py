@@ -25,7 +25,6 @@ class Engine():
         self.local_rank = local_rank
         self.world_size = world_size
         self.free_port = free_port
-        self.workshop = self.cfg.workshop
         self.ckpt_save_path = self.cfg.ckpt_save_path
         self.device = self.cfg.train.device
         self.EPOCH = self.cfg.train.EPOCH
@@ -312,7 +311,7 @@ def main_worker(local_rank, cfg, world_size, dist_url, free_port):
         criterion = ['accuracy', 'precision', 'recall', 'F1']
         evaluate = cfg.train.evaluate
         outfile = f'result/result_{cfg.model.type}.csv'
-        utils.write_result.path_to_csv(os.path.dirname(cfg.workshop), criterion, evaluate, csvfile=outfile)
+        utils.write_result.path_to_csv(os.path.dirname(cfg_clone.workshop), criterion, evaluate, csvfile=outfile)
 
 def main(cfg):
     utils.environment.visible_gpus(cfg.train.device_id)
