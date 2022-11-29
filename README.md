@@ -17,7 +17,7 @@ Our experiments run on Python 3.6 and PyTorch 1.5. Other versions should work bu
 * Alzheimer’s disease detection: [Pitt](https://dementia.talkbank.org/)  
 * Depression classification: [DAIC-WOZ](https://dcapswoz.ict.usc.edu/)  
 
-Note that you should create a metadata file (`.csv` format) for each dataset to record the `name` and `label` (and `state`, e.g. `train` or `dev` or `test`) of the samples. Then modify the argument: `meta_csv_file` in `./config/xxx_feature_config.json` according to the absolute path of the corresponding `.csv` file.
+Note that you should create a metadata file (`.csv` format) for each dataset to record the `name` and `label` (and `state`, e.g. `train` or `dev` or `test`) of the samples. Then modify the argument: `meta_csv_file` in `./config/xxx_feature_config.json` according to the absolute path of the corresponding `.csv` file. The example `.csv` files are in the `./metadata` directory.
 
 ### Extract acoustic feature
 * Three acoustic features are extracted from each audio sample, including `spectrogram (Spec)`, `Log-Mel spectrogram (Logmel)` and `pre-trained Wav2vec`.  
